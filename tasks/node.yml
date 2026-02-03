@@ -16,6 +16,19 @@
     path: "{{ pg_autofailover_node_pgdata }}/pg_autoctl.cfg"
   register: pg_autoctl_initialized
 
+- name: Check if pg_autoctl node service is running
+  ansible.builtin.systemd:
+    name: "{{ pg_autofailover_node_service_name }}"
+  register: pg_autoctl_service_status
+  failed_when: false
+  changed_when: false
+
+- name: Check for running pg_autoctl processes
+  ansible.builtin.shell: pgrep -f "pg_autoctl run.*{{ pg_autofailover_node_pgdata }}"
+  register: pg_autoctl_process
+  failed_when: false
+  changed_when: false
+
 - name: Check for existing PostgreSQL service
   ansible.builtin.systemd:
     name: "postgresql@{{ pg_autofailover_psql_version }}-main.service"
@@ -58,7 +71,9 @@
       {% if pg_autofailover_node_ssl_self_signed %}--ssl-self-signed{% endif %}
   environment:
     XDG_RUNTIME_DIR: /run/postgresql
-  when: not pg_autoctl_initialized.stat.exists
+  when:
+    - not pg_autoctl_initialized.stat.exists
+    - pg_autoctl_process.rc != 0  # Only run if no pg_autoctl process is running
 
 - name: Deploy pg_autoctl node systemd service
   ansible.builtin.template:
