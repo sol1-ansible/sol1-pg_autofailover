@@ -16,7 +16,7 @@ pg_autofailover_node_enabled: true
 pg_autofailover_node_pgdata: "/var/lib/postgresql/{{ pg_autofailover_psql_version }}/main"
 pg_autofailover_node_pgport: 5432
 pg_autofailover_node_hostname: "{{ ansible_default_ipv4.address }}"
-pg_autofailover_node_monitor_uri: ""  # Should be set by user, e.g., "postgres://autoctl_node@monitor-host:5500/pg_auto_failover?sslmode=require"
+pg_autofailover_node_monitor_uri: "postgres://autoctl_node@{{ pg_autofailover_node_hostname }}:5500/pg_auto_failover?sslmode=require" 
 pg_autofailover_node_auth: "trust"
 pg_autofailover_node_ssl_self_signed: true
 pg_autofailover_node_stop_existing_service: true  # Stop existing PostgreSQL service before pg_autoctl takes over
