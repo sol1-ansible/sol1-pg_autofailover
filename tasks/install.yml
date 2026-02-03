@@ -1,0 +1,22 @@
+---
+# Package installation tasks
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: Install pg_autofailover packages
+  ansible.builtin.apt:
+    name: "{{ pg_autofailover_packages }}"
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Ensure PostgreSQL runtime directory exists
+  ansible.builtin.file:
+    path: /run/postgresql
+    state: directory
+    owner: "{{ pg_autofailover_service_user }}"
+    group: "{{ pg_autofailover_service_group }}"
+    mode: '0755'

@@ -1,0 +1,32 @@
+---
+# Defaults for pg_autofailover role
+
+# PostgreSQL version
+pg_autofailover_psql_version: "17"
+
+# Monitor configuration
+pg_autofailover_monitor_enabled: false
+pg_autofailover_monitor_pgdata: "/var/lib/postgresql/monitor"
+pg_autofailover_monitor_pgport: 5500
+pg_autofailover_monitor_auth: "trust"
+pg_autofailover_monitor_ssl_self_signed: true
+
+# Node configuration
+pg_autofailover_node_enabled: true
+pg_autofailover_node_pgdata: "/var/lib/postgresql/{{ pg_autofailover_psql_version }}/main"
+pg_autofailover_node_pgport: 5432
+pg_autofailover_node_hostname: "{{ ansible_default_ipv4.address }}"
+pg_autofailover_node_monitor_uri: ""  # Should be set by user, e.g., "postgres://autoctl_node@monitor-host:5500/pg_auto_failover?sslmode=require"
+pg_autofailover_node_auth: "trust"
+pg_autofailover_node_ssl_self_signed: true
+pg_autofailover_node_stop_existing_service: true  # Stop existing PostgreSQL service before pg_autoctl takes over
+
+# Service configuration
+pg_autofailover_service_user: "postgres"
+pg_autofailover_service_group: "postgres"
+pg_autofailover_service_restart_sec: 2
+pg_autofailover_service_timeout_stop_sec: 30
+
+# Systemd service names
+pg_autofailover_monitor_service_name: "pg_autoctl-monitor.service"
+pg_autofailover_node_service_name: "pg_autoctl-node.service"

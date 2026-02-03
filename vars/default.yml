@@ -1,0 +1,10 @@
+---
+# Default OS-specific variables for pg_autofailover role
+# These can be overridden by more specific OS var files
+
+# No OS-specific overrides needed for defaults
+
+# Package names
+pg_autofailover_packages:
+  - pg-auto-failover-cli
+  - postgresql-{{ pg_autofailover_psql_version }}-auto-failover

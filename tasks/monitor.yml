@@ -1,0 +1,45 @@
+---
+# Monitor setup tasks
+
+- name: Ensure monitor data directory exists
+  ansible.builtin.file:
+    path: "{{ pg_autofailover_monitor_pgdata }}"
+    state: directory
+    owner: "{{ pg_autofailover_service_user }}"
+    group: "{{ pg_autofailover_service_group }}"
+    mode: '0700'
+
+- name: Check if monitor is already initialized
+  ansible.builtin.stat:
+    path: "{{ pg_autofailover_monitor_pgdata }}/postgresql.conf"
+  register: monitor_initialized
+
+- name: Create pg_autoctl monitor
+  become: true
+  become_user: "{{ pg_autofailover_service_user }}"
+  ansible.builtin.command:
+    cmd: >
+      pg_autoctl create monitor
+      --pgdata {{ pg_autofailover_monitor_pgdata }}
+      --pgport {{ pg_autofailover_monitor_pgport }}
+      --auth {{ pg_autofailover_monitor_auth }}
+      {% if pg_autofailover_monitor_ssl_self_signed %}--ssl-self-signed{% endif %}
+  environment:
+    XDG_RUNTIME_DIR: /run/postgresql
+  when: not monitor_initialized.stat.exists
+
+- name: Deploy pg_autoctl monitor systemd service
+  ansible.builtin.template:
+    src: pg_autoctl-monitor.service.j2
+    dest: /etc/systemd/system/{{ pg_autofailover_monitor_service_name }}
+    mode: '0644'
+  notify:
+    - Reload systemd
+    - Restart pg_autoctl monitor
+
+- name: Enable and start pg_autoctl monitor service
+  ansible.builtin.systemd:
+    name: "{{ pg_autofailover_monitor_service_name }}"
+    enabled: yes
+    state: started
+    daemon_reload: yes

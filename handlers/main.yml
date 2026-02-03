@@ -1,0 +1,16 @@
+---
+# Handlers for pg_autofailover role
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Restart pg_autoctl monitor
+  ansible.builtin.systemd:
+    name: "{{ pg_autofailover_monitor_service_name }}"
+    state: restarted
+
+- name: Restart pg_autoctl node
+  ansible.builtin.systemd:
+    name: "{{ pg_autofailover_node_service_name }}"
+    state: restarted

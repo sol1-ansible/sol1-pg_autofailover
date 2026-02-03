@@ -1,0 +1,17 @@
+[Unit]
+Description=pg_auto_failover monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User={{ pg_autofailover_service_user }}
+Group={{ pg_autofailover_service_group }}
+Environment=XDG_RUNTIME_DIR=/run/postgresql
+ExecStart=/usr/bin/pg_autoctl run --pgdata {{ pg_autofailover_monitor_pgdata }}
+Restart=always
+RestartSec={{ pg_autofailover_service_restart_sec }}
+KillMode=mixed
+TimeoutStopSec={{ pg_autofailover_service_timeout_stop_sec }}
+
+[Install]
+WantedBy=multi-user.target

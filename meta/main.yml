@@ -1,0 +1,29 @@
+---
+galaxy_info:
+  role_name: pg_autofailover
+  author: Your Name
+  description: Install and configure PostgreSQL auto-failover
+  company: Your Company
+  
+  license: MIT
+  
+  min_ansible_version: "2.9"
+  
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: Debian
+      versions:
+        - buster
+        - bullseye
+        - bookworm
+  
+  galaxy_tags:
+    - postgresql
+    - database
+    - high-availability
+    - failover
+
+dependencies: []

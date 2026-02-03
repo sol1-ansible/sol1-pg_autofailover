@@ -1,0 +1,77 @@
+---
+# Node setup tasks
+
+- name: Verify monitor URI is set
+  ansible.builtin.fail:
+    msg: "pg_autofailover_node_monitor_uri must be set when pg_autofailover_node_enabled is true"
+  when: pg_autofailover_node_monitor_uri | length == 0
+
+- name: Check if node data directory exists
+  ansible.builtin.stat:
+    path: "{{ pg_autofailover_node_pgdata }}"
+  register: node_pgdata_dir
+
+- name: Check if pg_autoctl state file exists
+  ansible.builtin.stat:
+    path: "{{ pg_autofailover_node_pgdata }}/pg_autoctl.cfg"
+  register: pg_autoctl_initialized
+
+- name: Check for existing PostgreSQL service
+  ansible.builtin.systemd:
+    name: "postgresql@{{ pg_autofailover_psql_version }}-main.service"
+  register: existing_pg_service
+  failed_when: false
+  changed_when: false
+
+- name: Stop existing PostgreSQL service
+  ansible.builtin.systemd:
+    name: "postgresql@{{ pg_autofailover_psql_version }}-main.service"
+    state: stopped
+    enabled: no
+  when:
+    - pg_autofailover_node_stop_existing_service | bool
+    - not pg_autoctl_initialized.stat.exists
+    - existing_pg_service.status is defined
+    - existing_pg_service.status.ActiveState is defined
+  ignore_errors: true
+
+- name: Ensure node data directory exists
+  ansible.builtin.file:
+    path: "{{ pg_autofailover_node_pgdata }}"
+    state: directory
+    owner: "{{ pg_autofailover_service_user }}"
+    group: "{{ pg_autofailover_service_group }}"
+    mode: '0700'
+  when: not node_pgdata_dir.stat.exists
+
+- name: Create pg_autoctl postgres node
+  become: true
+  become_user: "{{ pg_autofailover_service_user }}"
+  ansible.builtin.command:
+    cmd: >
+      pg_autoctl create postgres
+      --pgdata {{ pg_autofailover_node_pgdata }}
+      --pgport {{ pg_autofailover_node_pgport }}
+      --hostname {{ pg_autofailover_node_hostname }}
+      --monitor "{{ pg_autofailover_node_monitor_uri }}"
+      --auth {{ pg_autofailover_node_auth }}
+      {% if pg_autofailover_node_ssl_self_signed %}--ssl-self-signed{% endif %}
+  environment:
+    XDG_RUNTIME_DIR: /run/postgresql
+  when: not pg_autoctl_initialized.stat.exists
+
+- name: Deploy pg_autoctl node systemd service
+  ansible.builtin.template:
+    src: pg_autoctl-node.service.j2
+    dest: /etc/systemd/system/{{ pg_autofailover_node_service_name }}
+    mode: '0644'
+  notify:
+    - Reload systemd
+    - Restart pg_autoctl node
+
+- name: Enable and start pg_autoctl node service
+  ansible.builtin.systemd:
+    name: "{{ pg_autofailover_node_service_name }}"
+    enabled: yes
+    state: started
+    daemon_reload: yes

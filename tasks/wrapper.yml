@@ -1,0 +1,25 @@
+---
+# Wrapper script deployment tasks
+
+- name: Deploy pg_autoctl wrapper script
+  ansible.builtin.template:
+    src: pg_autoctl_wrapper.sh.j2
+    dest: /usr/local/bin/pg_autoctl_wrapper.sh
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Create shell aliases for pg_autoctl wrapper
+  ansible.builtin.lineinfile:
+    path: /etc/profile.d/pg_autoctl_aliases.sh
+    line: "{{ item }}"
+    create: yes
+    mode: '0644'
+  loop:
+    - "# pg_autoctl wrapper function aliases"
+    - "source /usr/local/bin/pg_autoctl_wrapper.sh"
+    - "alias pgctl-state='pg_autoctl_show_state'"
+    - "alias pgctl-switchover='pg_autoctl_switchover'"
+    - "alias pgctl-failover='pg_autoctl_failover'"
+    - "alias pgctl-status='pg_autoctl_status'"
+    - "alias pgctl-help='pg_autoctl_help'"

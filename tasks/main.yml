@@ -1,0 +1,27 @@
+---
+# Main tasks file for pg_autofailover role
+
+- name: Load OS-specific variables
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
+        - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_distribution }}.yml"
+        - "{{ ansible_os_family }}.yml"
+        - "default.yml"
+
+- name: Include package installation tasks
+  ansible.builtin.include_tasks: install.yml
+
+- name: Include monitor setup tasks
+  ansible.builtin.include_tasks: monitor.yml
+  when: pg_autofailover_monitor_enabled | bool
+
+- name: Include node setup tasks
+  ansible.builtin.include_tasks: node.yml
+  when: pg_autofailover_node_enabled | bool
+
+- name: Include wrapper script tasks
+  ansible.builtin.include_tasks: wrapper.yml
+  when: pg_autofailover_node_enabled | bool
