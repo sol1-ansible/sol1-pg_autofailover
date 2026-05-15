@@ -6,5 +6,6 @@
 
 # Package names
 pg_autofailover_packages:
+  - postgresql-{{ pg_autofailover_psql_version }}
   - pg-auto-failover-cli
   - postgresql-{{ pg_autofailover_psql_version }}-auto-failover
