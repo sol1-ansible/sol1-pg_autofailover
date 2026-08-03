@@ -21,6 +21,7 @@
     cmd: >
       pg_autoctl create monitor
       --pgdata {{ pg_autofailover_monitor_pgdata }}
+      --hostname {{ pg_autofailover_monitor_hostname }}
       --pgport {{ pg_autofailover_monitor_pgport }}
       --auth {{ pg_autofailover_monitor_auth }}
       {% if pg_autofailover_monitor_ssl_self_signed %}--ssl-self-signed{% endif %}

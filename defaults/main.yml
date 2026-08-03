@@ -7,6 +7,7 @@ pg_autofailover_psql_version: "17"
 # Monitor configuration
 pg_autofailover_monitor_enabled: false
 pg_autofailover_monitor_pgdata: "/var/lib/postgresql/monitor"
+pg_autofailover_monitor_hostname: "{{ ansible_default_ipv4.address | default(ansible_fqdn) }}"
 pg_autofailover_monitor_pgport: 5500
 pg_autofailover_monitor_auth: "trust"
 pg_autofailover_monitor_ssl_self_signed: true
