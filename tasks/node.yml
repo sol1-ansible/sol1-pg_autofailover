@@ -24,7 +24,7 @@
   changed_when: false
 
 - name: Check for running pg_autoctl processes
-  ansible.builtin.shell: pgrep -f "pg_autoctl run.*{{ pg_autofailover_node_pgdata }}"
+  ansible.builtin.shell: pgrep -f "[p]g_autoctl run.*{{ pg_autofailover_node_pgdata }}"
   register: pg_autoctl_process
   failed_when: false
   changed_when: false
